@@ -5,13 +5,22 @@ let polar = 0.;
 let azi = 0.;
 let rad = 4.;
 
+let selectedColor = null;
+
+const topBox = document.getElementById('top-box');
+const colorBox = document.getElementById('color-box');
+const colorText = document.getElementById('color-text');
+const checkboxSphere = document.getElementById('checkbox-sphere');
+const sliderScale = document.getElementById('slider-scale');
+
 function main() {
-	const canvas = document.querySelector('#canvas');
-	const gl = canvas.getContext('webgl', {alpha:false});
+	const canvas = document.getElementById('canvas');
+	const gl = canvas.getContext('webgl', {alpha:false, antialias:true});
 	if (gl === null) {
 		alert('no webgl!');
 		return;
 	}
+	gl.getExtension('OES_standard_derivatives');
 	gl.enable(gl.BLEND);
 	//gl.blendFuncSeparate(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA, gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
 	gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
@@ -28,6 +37,10 @@ function main() {
 			pointColor: gl.getUniformLocation(shaderProgram, 'uPointColor'),
 			modelViewMatrix: gl.getUniformLocation(shaderProgram, 'uModelViewMatrix'),
 			projectionMatrix: gl.getUniformLocation(shaderProgram, 'uProjectionMatrix'),
+			isOutline: gl.getUniformLocation(shaderProgram, 'uIsOutline'),
+			sphere: gl.getUniformLocation(shaderProgram, 'uSphere'),
+			scale: gl.getUniformLocation(shaderProgram, 'uScale'),
+			time: gl.getUniformLocation(shaderProgram, 'uTime'),
 		},
 	};
 
@@ -48,7 +61,7 @@ function main() {
 	});
 	canvas.addEventListener('mouseup', e => {
 		mL = false;
-		if (mouseMotionSinceDown < 16) {
+		if (mouseMotionSinceDown < 8) {
 			mStaticClick = true;
 		}
 	});
@@ -69,6 +82,7 @@ function main() {
 			px: pmx,
 			py: pmy,
 			staticClick: mStaticClick,
+			time: time * 0.001,
 		};
 		drawScene(gl, programInfo, buffers, input);
 		pmx = mx;
@@ -140,6 +154,7 @@ function drawScene(gl, programInfo, buffers, input) {
 	);
 
 	gl.useProgram(programInfo.program);
+
 	for (const color of colors) {
 		gl.bindBuffer(gl.ARRAY_BUFFER, buffers.pos);
 		gl.vertexAttribPointer(
@@ -148,11 +163,13 @@ function drawScene(gl, programInfo, buffers, input) {
 		);
 		gl.enableVertexAttribArray(programInfo.attribLocs.pos);
 
-
-
 		gl.uniform3fv(programInfo.uniformLocs.pointColor, color);
 		gl.uniformMatrix4fv(programInfo.uniformLocs.modelViewMatrix, false, modelViewMatrix);
 		gl.uniformMatrix4fv(programInfo.uniformLocs.projectionMatrix, false, projectionMatrix);
+		gl.uniform1i(programInfo.uniformLocs.isOutline, false);
+		gl.uniform1i(programInfo.uniformLocs.sphere, checkboxSphere.checked);
+		gl.uniform1f(programInfo.uniformLocs.scale, sliderScale.value/800);
+		gl.uniform1f(programInfo.uniformLocs.time, input.time);
 
 		gl.drawArrays(gl.TRIANGLE_FAN, 0, CIRCLE_RES);
 	}
@@ -168,12 +185,32 @@ function drawScene(gl, programInfo, buffers, input) {
 		const hexString = ((1 << 24) + (data[0] << 16) + (data[1] << 8) + data[2]).toString(16).slice(1);
 		const name = colorNames[hexString];
 		if (name) {
-			document.querySelector('#top-box').style.display = 'block';
-			document.querySelector('#color-box').style.backgroundColor = hexString;
-			document.querySelector('#color-text').innerHTML =
+			selectedColor = [data[0]/255, data[1]/255, data[2]/255];
+			topBox.style.display = 'block';
+			colorBox.style.backgroundColor = hexString;
+			colorText.innerHTML =
 				'<span style="color:#fff8">#' + hexString + ':</span> ' + name;
 		} else {
-			document.querySelector('#top-box').style.display = 'none';
+			selectedColor = null;
+			topBox.style.display = 'none';
 		}
+	}
+
+	// draw outline of selected color
+	if (selectedColor) {
+		gl.bindBuffer(gl.ARRAY_BUFFER, buffers.pos);
+		gl.vertexAttribPointer(
+			programInfo.attribLocs.pos,
+			2, gl.FLOAT, false, 0, 0
+		);
+		gl.enableVertexAttribArray(programInfo.attribLocs.pos);
+		gl.uniform3fv(programInfo.uniformLocs.pointColor, selectedColor);
+		gl.uniformMatrix4fv(programInfo.uniformLocs.modelViewMatrix, false, modelViewMatrix);
+		gl.uniformMatrix4fv(programInfo.uniformLocs.projectionMatrix, false, projectionMatrix);
+		gl.uniform1i(programInfo.uniformLocs.isOutline, true);
+		gl.uniform1i(programInfo.uniformLocs.sphere, checkboxSphere.checked);
+		gl.uniform1f(programInfo.uniformLocs.scale, sliderScale.value/800);
+		gl.uniform1f(programInfo.uniformLocs.time, input.time);
+		gl.drawArrays(gl.TRIANGLE_FAN, 0, CIRCLE_RES);
 	}
 }

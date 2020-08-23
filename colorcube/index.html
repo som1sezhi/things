@@ -6,9 +6,11 @@
 				border: 0;
 				padding: 0;
 				background-color: white;
+				color: white;
 				font-family: Consolas, monospace;
+				font-size: 1em;
 
-				/* stolen from stack overflow 
+				/* stolen from stack overflow
 				-moz-user-select: -moz-none;
 				-khtml-user-select: none;
 				-webkit-user-select: none;
@@ -19,10 +21,9 @@
 				width: 100vw;
 				height: 100vh;
 				display: block;
-			}
-			#canvas {
 				z-index: 0;
 			}
+
 			#top-box {
 				position: absolute;
 				margin: 10;
@@ -30,23 +31,55 @@
 				left: 0;
 				top: 0;
 				z-index: 1;
-				color: white;
+
 				background-color: #4449;
 				display: none;
 			}
 			#color-box {
-				width: 1.5em;
-				height: 1.5em;
-				background-color: #00000000;
+				width: 2.25em;
+				height: 2.25em;
+				background-color: #0000;
 				display: inline-block;
 				vertical-align: middle;
 			}
 			#color-text {
 				margin-left: 5;
 				margin-right: 5;
-				font-size: 1em;
+
 				display: inline;
 				vertical-align: middle;
+			}
+
+			#options {
+				display: block;
+				position: fixed;
+				top: 0;
+				right: 0;
+				z-index: 1;
+				font-size: 0.75em;
+				line-height: 2em;
+			}
+			#options-button {
+				background-color: #4449;
+				padding: 2 5;
+				display: block;
+			}
+			#options-box {
+				background-color: #4449;
+				padding: 2 5;
+				display: none;
+			}
+			#options:hover #options-button {
+				display: none;
+			}
+			#options:hover #options-box {
+				display: block;
+			}
+			input[type=checkbox] {
+				vertical-align: middle;
+			}
+			label {
+				vertical-align: middle
 			}
 		</style>
 		<script src="gl-matrix-min.js"></script>
@@ -56,34 +89,53 @@
 			uniform vec3 uPointColor;
 			uniform mat4 uModelViewMatrix;
 			uniform mat4 uProjectionMatrix;
+			uniform bool uIsOutline;
+			uniform bool uSphere;
+			uniform float uScale;
 			varying vec3 vColor;
 			varying vec2 vPointCoord;
 
 			void main() {
-				bool sphere = false;
 				vec3 p = 2. * uPointColor - 1.;
-				if (sphere) {
+				if (uSphere) {
 					p = vec3(
 						p.x * sqrt(1. - p.y*p.y/2. - p.z*p.z/2. + p.y*p.y*p.z*p.z/3.),
 						p.y * sqrt(1. - p.z*p.z/2. - p.x*p.x/2. + p.z*p.z*p.x*p.x/3.),
 						p.z * sqrt(1. - p.x*p.x/2. - p.y*p.y/2. + p.x*p.x*p.y*p.y/3.)
 					);
 				}
-				vec4 mvOffsetPos = (uModelViewMatrix * vec4(p, 1.)) + vec4(aPos/30., 0., 1.);
+				float fac = 1.;
+				if (uIsOutline) {
+					fac = 1.2;
+				}
+				vec4 mvOffsetPos = (uModelViewMatrix * vec4(p, 1.)) + vec4(fac*uScale*aPos, 0., 1.);
 				gl_Position = uProjectionMatrix * mvOffsetPos;
 
 				vColor = uPointColor;
-				vPointCoord = aPos;
+				vPointCoord = fac * aPos;
 			}
 		</script>
 		<script id="fragment-shader" type="notjs">
 			precision mediump float;
+			#extension GL_OES_standard_derivatives : enable
+			uniform bool uIsOutline;
+			uniform float uTime;
 			varying vec3 vColor;
 			varying vec2 vPointCoord;
-			//#extension GL_OES_standard_derivatives : enable
 			void main() {
 				//vec3 color = mix(vColor-.02, vColor+.05, pow(length(vPointCoord), 3.));
-				gl_FragColor = vec4(vColor, 1.);
+				if (uIsOutline) {
+					float v = .5 * sin(uTime * 5.) + .5;
+					vec3 outlineColor = vec3(v, v, 1.-v);
+
+					float r = length(vPointCoord);
+					float delta = fwidth(r);
+					float fac = smoothstep(.9-delta, .9+delta, r);
+
+					gl_FragColor = vec4(mix(vColor, outlineColor, fac), 1.);
+				} else {
+					gl_FragColor = vec4(vColor, 1.);
+				}
 			}
 		</script>
 	</head>
@@ -92,6 +144,15 @@
 		<div id="top-box">
 			<span id="color-box"></span>
 			<span id="color-text">text lol</span>
+		</div>
+		<div id="options">
+			<div id="options-button">options</div>
+			<div id="options-box">
+				<input type="checkbox" id="checkbox-sphere" />
+				<label for="checkbox-sphere">Project to sphere</label><br />
+				Point size <br />
+				<input type="range" min="10" max="100" id="slider-scale" value="30"/>
+			</div>
 		</div>
 		<script src="colorcube.js"></script>
 		<script src="colorcube_read.js"></script>
