@@ -1,0 +1,38 @@
+<html>
+	<head>
+		<title>Naming Numbers</title>
+		<style>
+			body {
+				margin: 20px;
+				font-family: Consolas, monospace;
+				line-height: 2em;
+				font-size: 90%;
+			}
+			#name {
+				background-color: #ddd;
+				margin: 1em auto;
+				padding: 0.5em 0.5em;
+				line-height: 1.25em;
+			}
+		</style>
+	</head>
+	<body>
+		<h1>Get the name of any integer</h1>
+		<a href="https://sites.google.com/site/largenumbers/home/2-4/6">
+			based on this page, modified slightly to be easier to code lol
+		</a>
+		<br>
+		<label for="num">Type in an integer (no commas):</label>
+		<br>
+		<textarea id="num" name="num" rows="6" cols="40"></textarea>
+		<br>
+		<input type="button" value="Get name of number" onclick="displayName()">
+		<input type="checkbox" id="numericize" name="numericize">
+		<label for="numericize">Numericize</label>
+		<br>
+		<input type="button" value="Get name of -illion" onclick="displayIllion()">
+		<div id="name"></div>
+		<script src="BigInteger.min.js"></script>
+		<script src="numbernames.js"></script>
+	</body>
+</html>
