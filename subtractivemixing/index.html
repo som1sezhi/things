@@ -1,0 +1,89 @@
+<html>
+	<head>
+		<title>Subtractive Color Mixing</title>
+		<style>
+			body {
+				margin: 20px;
+				font-family: Consolas, monospace;
+				line-height: 2em;
+				font-size: 90%;
+			}
+
+			.picker, .slider, .reading {
+				margin: 0px;
+				border: 0px;
+				padding: 0px;
+				vertical-align: middle;
+			}
+
+			.picker {
+				outline: none;
+				height: 20px;
+			}
+
+			.slider {
+				-webkit-appearance: none;
+				appearance: none;
+				width: 400px;
+				height: 20px;
+				/*border: 10px solid #000000;*/
+				margin: 0px 10px;
+				border-radius: 15px;
+				outline: none;
+				padding: 0px 4px;
+			}
+
+			.slider::-webkit-slider-thumb {
+				-webkit-appearance: none;
+				appearance: none;
+				width: 12px;
+				height: 12px;
+				background: #fff;
+				border: none;
+				border-radius: 10px;
+				box-shadow: 0px 0px 3px 3px #00002233;
+			}
+
+			.slider::-moz-range-thumb {
+				-webkit-appearance: none;
+				appearance: none;
+				width: 12px;
+				height: 12px;
+				background: #fff;
+				border: none;
+				border-radius: 10px;
+				box-shadow: 0px 0px 3px 3px #00002233;
+			}
+
+			.reading {
+				display: inline;
+				margin: 0px 10px;
+			}
+
+			.color-item {
+				margin: 5px 0px;
+			}
+
+			#color-box {
+				width: 60px;
+				height: 60px;
+				border: none;
+				box-shadow: 0px 0px 3px 3px #00002211;
+			}
+		</style>
+	</head>
+	<body>
+		<h1>Subtractive Color Mixing</h1>
+		<div>
+			<div id="color-box"></div>
+			<div id="mixed-color-reading">#ffffff (0%, 0%, 0%)</div>
+		</div>
+		<div>
+			<input type="color" value="#ffffff" oninput="update()" class="picker" id="base-color-input">
+			<div class="reading" id="base-color-reading">base color: #ffffff</div>
+		<div>
+		<div id="color-list"></div>
+		<button type="button" onclick="addColor('#000000')">add color</button>
+		<script type="text/javascript" src="subtractivemixing.js"></script>
+	</body>
+</html>
