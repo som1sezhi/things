@@ -1,0 +1,55 @@
+<html>
+	<head>
+		<title>Singular Value Decomposition</title>
+		<style>
+			body {
+				margin: 20px;
+				font-family: Consolas, monospace;
+				line-height: 1.5em;
+				font-size: 90%;
+			}
+
+			canvas, img {
+				max-height: 400px;
+				margin: 10px 10px 10px 0px;
+				display: inline;
+			}
+
+			.singular-values {
+				font-size: 90%;
+				line-height: 1em;
+			}
+		</style>
+	</head>
+	<body>
+		<h1>Singular Value Decomposition</h1>
+		<label for="image-upload" style="display: block;">
+			Upload an image (no transparency and smaller than 700 x 700 recommended, use larger images at your own risk):
+		</label>
+		<input type="file" id="image-upload" name="image-upload"></input>
+		<input type="checkbox" id="check-resize" name="check-resize" checked></input>
+		<label for="check-resize">
+			Automatically shrink images larger than 500,000 pixels (approx. 707 x 707)
+		</label>
+		<div>
+			<p id="loading"></p>
+			<!--<canvas id="canvas"></canvas>
+			<canvas id="canvas-svd"></canvas>-->
+			<img id="image" />
+			<img id="image-svd" />
+		</div>
+		<p id="shrink-notice"></p>
+		<label for="textbox">
+			Select singular values:
+		</label>
+		<input type="text" id="textbox" name="textbox" disabled></input>
+		<button type="button" id="go-button" disabled>Go</button>
+		<p id="instructions"></p>
+		<p id="rank" class="singular-values">Rank of original matrix:</p>
+		<p class="singular-values">Non-zero singular values:</p>
+		<table id="table-svalues" class="singular-values"></table>
+
+		<script type="text/javascript" src="numeric-1.2.6.min.js"></script>
+		<script type="text/javascript" src="svd-demo.js"></script>
+	</body>
+</html>
